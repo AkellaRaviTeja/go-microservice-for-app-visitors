@@ -1,0 +1,229 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  GenericError:
+    description: GenericError is a generic error message returned by a server
+    properties:
+      message:
+        type: string
+        x-go-name: Message
+    type: object
+    x-go-package: visitor-registry/handlers
+  ObjectID:
+    items:
+      format: uint8
+      type: integer
+    title: ObjectID is the BSON ObjectID type.
+    type: array
+    x-go-package: go.mongodb.org/mongo-driver/bson/primitive
+  Visitor:
+    description: Model for thevisitor info
+    properties:
+      _id:
+        $ref: '#/definitions/ObjectID'
+      app_info:
+        properties:
+          app_id:
+            type: string
+            x-go-name: AppID
+          app_mode:
+            type: string
+            x-go-name: AppMode
+          app_name:
+            type: string
+            x-go-name: AppName
+          app_version:
+            type: string
+            x-go-name: AppVersion
+          bundle_id:
+            type: string
+            x-go-name: BundleID
+        type: object
+        x-go-name: AppInfo
+      device_info:
+        properties:
+          dimensions:
+            properties:
+              height:
+                format: uint64
+                type: integer
+                x-go-name: Height
+              width:
+                format: uint64
+                type: integer
+                x-go-name: Width
+            type: object
+            x-go-name: Dimensions
+          dimensions_in_pixels:
+            properties:
+              height:
+                format: uint64
+                type: integer
+                x-go-name: Height
+              width:
+                format: uint64
+                type: integer
+                x-go-name: Width
+            type: object
+            x-go-name: DimensionsInPixels
+          dpi:
+            format: uint64
+            type: integer
+            x-go-name: DPI
+          hardware_model:
+            type: string
+            x-go-name: HardwareModel
+          id:
+            type: string
+            x-go-name: ID
+          os_version:
+            type: string
+            x-go-name: OSVersion
+          platform:
+            type: string
+            x-go-name: Platform
+        type: object
+        x-go-name: DeviceInfo
+      sdk_info:
+        properties:
+          config_id:
+            type: string
+            x-go-name: ConfigID
+          sdk_start_time:
+            format: int64
+            type: integer
+            x-go-name: SDKStartTime
+          sdk_version:
+            format: uint64
+            type: integer
+            x-go-name: SDKVersion
+          tick_interval:
+            format: float
+            type: number
+            x-go-name: TickInterval
+        type: object
+        x-go-name: SDKInfo
+      session_info:
+        properties:
+          _id:
+            type: boolean
+            x-go-name: IsFirstSession
+          duration:
+            format: double
+            type: number
+            x-go-name: Duration
+          id:
+            type: string
+            x-go-name: ID
+          is_first_session:
+            type: boolean
+            x-go-name: IsBackground
+          launch_time:
+            format: int64
+            type: integer
+            x-go-name: LaunchTime
+          launch_type:
+            type: string
+            x-go-name: LaunchType
+          process_name:
+            type: string
+            x-go-name: ProcessName
+          startup_time:
+            format: uint64
+            type: integer
+            x-go-name: StartupTime
+          total_duration:
+            format: double
+            type: number
+            x-go-name: TotalDuration
+        type: object
+        x-go-name: SessionInfo
+    type: object
+    x-go-package: visitor-registry/data
+info:
+  description: Documentation for Visitor API
+  title: visitor
+  version: 1.0.0
+paths:
+  /visitor:
+    get:
+      description: Return a list of visitors from the database
+      operationId: getVisitor
+      parameters:
+      - format: uint64
+        in: query
+        name: sdkversion
+        type: integer
+        x-go-name: SDKVersion
+      - in: query
+        name: configid
+        type: string
+        x-go-name: ConfigID
+      - in: query
+        name: processname
+        type: string
+        x-go-name: ProcessName
+      - in: query
+        name: appname
+        type: string
+        x-go-name: AppName
+      - in: query
+        name: bundleid
+        type: string
+        x-go-name: BundleID
+      - in: query
+        name: deviceid
+        type: string
+        x-go-name: ID
+      - in: query
+        name: osversion
+        type: string
+        x-go-name: OSVersion
+      responses:
+        "200":
+          $ref: '#/responses/visitorsResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - GetAVisitor
+    post:
+      description: Return a list of visitors from the database
+      operationId: addVisitor
+      parameters:
+      - description: Visitor data structure for registering one
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/Visitor'
+      responses:
+        "200":
+          $ref: '#/responses/addVisitorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - CreateAVisitor
+produces:
+- application/json
+responses:
+  addVisitorResponse:
+    description: ID returned after registring a visitor
+    headers:
+      id:
+        description: The id of the visitor
+        format: int64
+        type: integer
+  errorResponse:
+    description: Generic error message returned as a string
+    schema:
+      $ref: '#/definitions/GenericError'
+  visitorsResponse:
+    description: A list of products
+    schema:
+      items:
+        $ref: '#/definitions/Visitor'
+      type: array
+schemes:
+- http
+swagger: "2.0"
