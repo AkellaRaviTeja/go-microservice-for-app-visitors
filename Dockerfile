@@ -32,8 +32,10 @@ WORKDIR /app/
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
 
-# Expose port 9191
+# Expose ports
 EXPOSE 9191
+EXPOSE 27017
+EXPOSE 8081
 
 # Run Executable
 CMD ["./main"]
