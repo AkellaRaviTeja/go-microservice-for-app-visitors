@@ -1,19 +1,39 @@
-# syntax=docker/dockerfile:1
+# GO Repo base repo
+FROM golang:1.16.12-alpine3.15 as builder
 
-# Latest version of go
-FROM golang:latest
+RUN apk add git
 
-# Create a directory to copy the files from host system to the docker image
+# Add Maintainer Info
+LABEL maintainer="<>"
+
+RUN mkdir /app
+ADD . /app
 WORKDIR /app
 
-# Download the necessary modules
-COPY go.mod ./
-COPY go.sum ./
+COPY go.mod go.sum ./
+
+# Download all the dependencies
 RUN go mod download
 
-# Copy the go files
-COPY *.go ./
+COPY . .
 
-# Build the go binary
-RUN go build -o /visitor-service
-CMD [ "/visitor-service" ]
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+# GO Repo base repo
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates curl
+
+RUN mkdir /app
+
+WORKDIR /app/
+
+# Copy the Pre-built binary file from the previous stage
+COPY --from=builder /app/main .
+
+# Expose port 9191
+EXPOSE 9191
+
+# Run Executable
+CMD ["./main"]
